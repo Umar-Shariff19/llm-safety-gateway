@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>LLM Safety Gateway Demo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #050816;
+      color: #f5f5f5;
+      display: flex;
+      justify-content: center;
+      align-items: stretch;
+      min-height: 100vh;
+    }
+    .container {
+      display: flex;
+      gap: 1rem;
+      padding: 1rem;
+      width: 100%;
+      max-width: 1200px;
+    }
+    .card {
+      background: #0b1020;
+      border-radius: 12px;
+      padding: 1rem;
+      box-shadow: 0 0 20px rgba(0,0,0,0.4);
+      border: 1px solid #262a3d;
+    }
+    .chat-panel {
+      flex: 2;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+    }
+    .safety-panel {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+    }
+    h1, h2 {
+      margin: 0 0 0.5rem 0;
+      font-size: 1.1rem;
+    }
+    #messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 0.5rem;
+      margin-bottom: 0.75rem;
+      border-radius: 8px;
+      background: #050816;
+      border: 1px solid #262a3d;
+      font-size: 0.9rem;
+    }
+    .msg {
+      margin-bottom: 0.5rem;
+      padding: 0.5rem 0.75rem;
+      border-radius: 8px;
+      max-width: 90%;
+      white-space: pre-wrap;
+    }
+    .msg.user {
+      align-self: flex-end;
+      background: #2563eb33;
+    }
+    .msg.llm {
+      align-self: flex-start;
+      background: #16a34a33;
+    }
+    .msg.system {
+      background: #f9731633;
+    }
+    #prompt {
+      width: 100%;
+      min-height: 60px;
+      max-height: 120px;
+      resize: vertical;
+      padding: 0.5rem;
+      border-radius: 8px;
+      border: 1px solid #262a3d;
+      background: #050816;
+      color: #f5f5f5;
+    }
+    .controls {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-top: 0.5rem;
+    }
+    button {
+      padding: 0.5rem 1rem;
+      border-radius: 999px;
+      border: none;
+      background: linear-gradient(135deg, #2563eb, #7c3aed);
+      color: white;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    .badge {
+      display: inline-block;
+      padding: 0.25rem 0.6rem;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+    .badge.allow { background: #16a34a33; color: #4ade80; }
+    .badge.soft_review { background: #facc1533; color: #facc15; }
+    .badge.block_or_rewrite { background: #ef444433; color: #fca5a5; }
+    .kv {
+      font-size: 0.8rem;
+      margin-bottom: 0.25rem;
+    }
+    .kv span.label {
+      color: #9ca3af;
+    }
+    .list {
+      font-size: 0.8rem;
+      max-height: 120px;
+      overflow-y: auto;
+      padding-left: 1rem;
+    }
+    .drift-bar {
+      position: relative;
+      margin-top: 0.25rem;
+      height: 8px;
+      border-radius: 999px;
+      background: #111827;
+      overflow: hidden;
+    }
+    .drift-fill {
+      position: absolute;
+      top: 0; left: 0; bottom: 0;
+      width: 0%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, #22c55e, #eab308, #ef4444);
+      transition: width 0.3s ease;
+    }
+    small {
+      color: #9ca3af;
+      font-size: 0.75rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Chat panel -->
+    <div class="card chat-panel">
+      <h1>LLM Safety Gateway — Conversation Demo</h1>
+      <small>Left: conversation. Right: safety analysis from gateway.</small>
+      <div id="messages"></div>
+      <textarea id="prompt" placeholder="Type your next prompt..."></textarea>
+      <div class="controls">
+        <button id="send-btn">Send</button>
+        <small id="status-text"></small>
+      </div>
+    </div>
+
+    <!-- Safety diagnostics -->
+    <div class="card safety-panel">
+      <h2>Safety Gateway Output</h2>
+      <div class="kv">
+        <span class="label">Action: </span>
+        <span id="action-badge" class="badge">–</span>
+      </div>
+      <div class="kv">
+        <span class="label">Drift score: </span>
+        <span id="drift-label">0</span>%
+        <div class="drift-bar">
+          <div id="drift-fill" class="drift-fill"></div>
+        </div>
+      </div>
+      <div class="kv">
+        <span class="label">Sanitized prompt:</span>
+      </div>
+      <div class="kv" id="sanitized-prompt" style="margin-bottom: 0.5rem; font-size: 0.8rem;"></div>
+
+      <div class="kv">
+        <span class="label">Flagged fragments:</span>
+      </div>
+      <ul id="flagged-list" class="list"></ul>
+    </div>
+  </div>
+
+  <script src="/static/script.js"></script>
+</body>
+</html>
