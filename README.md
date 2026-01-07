@@ -48,8 +48,6 @@ And the sanitized prompt is sent to **Groq LLaMA 3.1 8B Instant** only if safe.
 
 ## 🖥️ Live Interface Preview
 
-*(Add your own screenshot here)*
-
 ```
 /app/static/index.html
 ```
